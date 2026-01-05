@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# Model files (too large for GitHub)
+model_output/
+*.bin
+*.pt
+
+# Data
+data/
+
+# AWS
+.aws/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+logs/
+*.log

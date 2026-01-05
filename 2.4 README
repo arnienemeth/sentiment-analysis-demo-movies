@@ -1,0 +1,63 @@
+# 🎬 Sentiment Analysis Demo
+
+Movie review sentiment analysis using Deep Learning.
+
+## 🛠️ Tech Stack
+
+- **Model:** DistilBERT (Hugging Face Transformers)
+- **Framework:** PyTorch
+- **Cloud:** AWS S3
+- **Dataset:** Rotten Tomatoes (10,662 reviews)
+- **Visualization:** Streamlit + Plotly
+
+## 🚀 Live Demo
+
+[Click here to try the app](https://your-app-url.streamlit.app)
+
+## 📊 Features
+
+- Single review sentiment analysis
+- Batch analysis for multiple reviews
+- Confidence score visualization
+- Probability distribution charts
+
+## 🏗️ Architecture
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ Rotten Tomatoes │────▶│    AWS S3       │────▶│   Training      │
+│    Dataset      │     │   (Storage)     │     │  (PyTorch)      │
+└─────────────────┘     └─────────────────┘     └────────┬────────┘
+                                                         │
+                        ┌─────────────────┐              │
+                        │    Streamlit    │◀─────────────┘
+                        │  (Deployment)   │
+                        └─────────────────┘
+```
+
+## 📁 Project Structure
+```
+sentiment-analysis-demo/
+├── app.py                 # Streamlit application
+├── train_model.py         # Model training script
+├── download_dataset.py    # Dataset download script
+├── upload_to_s3.py        # AWS S3 upload script
+├── requirements.txt       # Python dependencies
+└── README.md              # Project documentation
+```
+
+## 🏃 Run Locally
+```bash
+# Clone repository
+git clone https://github.com/YOUR_USERNAME/sentiment-analysis-demo.git
+cd sentiment-analysis-demo
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run app
+streamlit run app.py
+```
+
+## 👤 Author
+
+Arnold Nemeth - 2026
