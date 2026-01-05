@@ -1,86 +1,135 @@
 Sentiment Analysis — Movie Reviews
-Lightweight demo that classifies movie reviews as Positive or Negative using a DistilBERT model and provides interactive visualizations (confidence gauge and probability bar chart). The app is packaged as a Hugging Face Space so anyone can try it in the browser.
+Professional, shareable demo that classifies movie reviews as Positive or Negative using a DistilBERT model, visualizes results with interactive Plotly charts, and is deployed on AWS-backed infrastructure and Hugging Face Spaces for instant sharing.
 
-Key features
-Model: DistilBERT fine-tuned for sentiment (Hugging Face model).
+Project Overview
+Purpose: Demonstrate end-to-end NLP skills: data handling, transfer learning, inference, visualization, and cloud deployment.
+Audience: Hiring managers, ML engineers, and portfolio reviewers who want to see practical experience with modern NLP tooling and cloud integration.
+Live demo: https://huggingface.co/spaces/Arnie1980/sentiment-analysis-movies
 
-Inference: Fast, CPU-friendly PyTorch inference.
+Key Features
+Model: DistilBERT fine-tuned for sentiment classification (Hugging Face Transformers).
 
-Visuals: Plotly gauge for confidence and bar chart for probability breakdown.
+Inference: PyTorch-based, CPU-friendly inference pipeline.
 
-UI: Gradio-based web interface for single and batch review analysis.
+Visualizations: Plotly gauge for confidence and bar chart for probability breakdown.
 
-Deployment: Hosted on Hugging Face Spaces — no local install required to try the demo.
+UI: Gradio interface for single and batch review analysis.
 
-Repository contents
-app.py — Gradio app that loads the model, runs inference, and renders Plotly visualizations.
+Cloud: Data and artifacts stored on AWS S3; app hosted on Hugging Face Spaces.
 
-requirements.txt — Python dependencies needed to run the app.
+Reproducibility: requirements.txt and Procfile included for consistent deployment.
 
-Procfile (optional) — explicit startup command for some hosting platforms.
+Architecture and Process Workflow
+High level flow
 
-README.md — this file.
+Kód
+User Input (single or batch) 
+      ↓
+Gradio UI
+      ↓
+Tokenization (DistilBERT tokenizer)
+      ↓
+Model Inference (DistilBERT via PyTorch)
+      ↓
+Postprocessing (softmax → probabilities)
+      ↓
+Visualizations (Plotly gauge + bar chart) + Results table
+      ↓
+Optional: Save logs / results to AWS S3
+Components
 
-Quick start (local)
-Clone the repo:
+Data: IMDB or Rotten Tomatoes datasets (Hugging Face Datasets or CSV).
+
+Training: Fine-tune DistilBERT locally or on Colab; save model artifacts.
+
+Storage: Upload datasets and model artifacts to AWS S3 for persistence.
+
+Serving: Gradio app loads model from local path or S3 and serves inference.
+
+Hosting: Hugging Face Spaces for public demo and sharing.
+
+Visualizations
+What the app shows
+
+Confidence Gauge — single-value indicator showing model confidence for the predicted label.
+
+Probability Bar Chart — side-by-side bars for Positive and Negative probabilities with percentage labels.
+
+Batch Results Table — sentiment and confidence for each review and a pie chart for distribution.
+
+Plotly snippets
+
+python
+# Gauge chart
+import plotly.graph_objects as go
+fig = go.Figure(go.Indicator(
+    mode="gauge+number",
+    value=confidence*100,
+    title={"text": f"Confidence ({label})"},
+    number={"suffix": "%"},
+    gauge={"axis": {"range": [0,100]}, "bar": {"color": color}}
+))
+python
+# Probability bar chart
+import plotly.express as px
+df = pd.DataFrame({"Sentiment": ["Negative","Positive"], "Probability": [neg*100, pos*100]})
+fig = px.bar(df, x="Sentiment", y="Probability", color="Sentiment",
+             color_discrete_map={"Positive":"#00CC66","Negative":"#FF4444"})
+fig.update_traces(texttemplate='%{y:.1f}%', textposition='outside')
+Quick Start
+Clone
 
 bash
 git clone https://github.com/YOUR_USERNAME/sentiment-analysis-movies.git
 cd sentiment-analysis-movies
-Create and activate a virtual environment:
+Environment
 
 bash
 python -m venv venv
 source venv/bin/activate   # Linux / macOS
 venv\Scripts\activate      # Windows
-Install dependencies:
-
-bash
 pip install -r requirements.txt
-Run the app locally:
+Run locally
 
 bash
 python app.py
-The Gradio app will start and print a local URL.
+Or visit the hosted demo: https://huggingface.co/spaces/Arnie1980/sentiment-analysis-movies
 
-How it works — high level
-Input — user enters a single review or multiple reviews (one per line).
+AWS Integration and Deployment Notes
+S3 stores datasets and model artifacts for reproducible runs. Use boto3 to upload/download CSVs and model folders.
 
-Tokenization — text is tokenized with the DistilBERT tokenizer.
+IAM: create a least-privilege user with S3 access for automation scripts.
 
-Inference — model predicts logits; softmax converts logits to probabilities.
+Optional: use SageMaker or an EC2 instance for larger training runs; for quick demos, Colab or local CPU/GPU is sufficient.
 
-Output — label (Positive/Negative), confidence score, Plotly gauge, and probability bar chart.
+Hosting: Hugging Face Spaces serves the Gradio app; S3 provides persistent storage for datasets and saved models.
 
-Batch mode — processes multiple reviews and shows a results table and distribution chart.
+Tech Stack
+Layer	Technology
+Model	DistilBERT (Hugging Face Transformers)
+Inference	PyTorch
+UI	Gradio
+Visualizations	Plotly
+Storage	AWS S3
+Hosting	Hugging Face Spaces
+Project Structure
+Kód
+sentiment-analysis-movies/
+├── app.py
+├── requirements.txt
+├── Procfile
+├── src/
+│   ├── train_model.py
+│   └── inference.py
+├── data/
+│   └── *.csv
+└── README.md
+How to extend
+Add explainability (LIME, SHAP) to highlight tokens that drive predictions.
 
-Deployment
-Hosted on Hugging Face Spaces: try it live at https://huggingface.co/spaces/Arnie1980/sentiment-analysis-movies.
+Add multi-language support and additional datasets.
 
-To deploy your own copy, push the repo to a new Space or use Streamlit/Gradio hosting with the included files.
-
-Dependencies
-Minimum required packages (see requirements.txt):
-
-gradio
-
-torch
-
-transformers
-
-pandas
-
-plotly
-
-Notes & tips
-The demo uses a pre-trained DistilBERT model for speed and low resource usage. For production, consider larger models or additional fine-tuning on domain-specific data.
-
-For faster experimentation, run on Google Colab or a GPU-enabled environment.
-
-If you want to extend the demo: add sentiment explanation (saliency), support more languages, or add a small dataset upload + retrain flow.
-
-License
-Open-source friendly. Add your preferred license file (e.g., MIT) to the repo.
+Add CI/CD to retrain and redeploy when new data is added to S3.
 
 Contact
-Project by Arnold Nemeth — improvements and PRs welcome.
+Project by Arnold Nemeth. Feedback, PRs, and collaboration welcome.
