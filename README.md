@@ -1,82 +1,99 @@
 Sentiment Analysis — Movie Reviews
-Professional, shareable demo that classifies movie reviews as Positive or Negative using a DistilBERT model, visualizes results with interactive Plotly charts, and is deployed on AWS-backed infrastructure and Hugging Face Spaces for instant sharing.
+Production‑oriented demo that classifies movie reviews as Positive or Negative using DistilBERT, visualizes results with Plotly charts, and demonstrates cloud integration with AWS S3. The app is deployed as a public Hugging Face Space for instant sharing.
 
-Project Overview
-Purpose: Demonstrate end-to-end NLP skills: data handling, transfer learning, inference, visualization, and cloud deployment.
-Audience: Hiring managers, ML engineers, and portfolio reviewers who want to see practical experience with modern NLP tooling and cloud integration.
 Live demo: https://huggingface.co/spaces/Arnie1980/sentiment-analysis-movies
 
-Key Features
-Model: DistilBERT fine-tuned for sentiment classification (Hugging Face Transformers).
+Project summary
+Goal: End‑to‑end NLP demo showing tokenization, inference, visualization, and cloud storage.
 
-Inference: PyTorch-based, CPU-friendly inference pipeline.
+Model: DistilBERT (Hugging Face Transformers)
 
-Visualizations: Plotly gauge for confidence and bar chart for probability breakdown.
+Inference: PyTorch
 
-UI: Gradio interface for single and batch review analysis.
+UI: Gradio (shareable web UI)
 
-Cloud: Data and artifacts stored on AWS S3; app hosted on Hugging Face Spaces.
+Visuals: Plotly gauge + probability bar chart (saved as static images for README compatibility)
 
-Reproducibility: requirements.txt and Procfile included for consistent deployment.
+Cloud: AWS S3 for datasets and model artifacts; Hugging Face Spaces for hosting
 
-Architecture and Process Workflow
-High level flow
+Why the charts in README were failing
+GitHub README files do not render interactive Plotly charts. To make visuals visible in the README we:
 
-Kód
-User Input (single or batch) 
-      ↓
-Gradio UI
-      ↓
-Tokenization (DistilBERT tokenizer)
-      ↓
-Model Inference (DistilBERT via PyTorch)
-      ↓
-Postprocessing (softmax → probabilities)
-      ↓
-Visualizations (Plotly gauge + bar chart) + Results table
-      ↓
-Optional: Save logs / results to AWS S3
-Components
+Render Plotly charts to static PNG/SVG during your build or locally, and commit them to assets/ (or generate them in CI).
 
-Data: IMDB or Rotten Tomatoes datasets (Hugging Face Datasets or CSV).
+Reference those static images in the README so they display reliably on GitHub and in other viewers.
 
-Training: Fine-tune DistilBERT locally or on Colab; save model artifacts.
+Below are the exact steps and code snippets to generate and include static visuals.
 
-Storage: Upload datasets and model artifacts to AWS S3 for persistence.
+How to generate static Plotly images (recommended)
+Install the renderer dependencies (Kaleido is recommended for static export):
 
-Serving: Gradio app loads model from local path or S3 and serves inference.
-
-Hosting: Hugging Face Spaces for public demo and sharing.
-
-Visualizations
-What the app shows
-
-Confidence Gauge — single-value indicator showing model confidence for the predicted label.
-
-Probability Bar Chart — side-by-side bars for Positive and Negative probabilities with percentage labels.
-
-Batch Results Table — sentiment and confidence for each review and a pie chart for distribution.
-
-Plotly snippets
+bash
+pip install plotly kaleido
+Add a small script to export the figures used in the app:
 
 python
-# Gauge chart
+# scripts/export_visuals.py
+import pandas as pd
 import plotly.graph_objects as go
-fig = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=confidence*100,
-    title={"text": f"Confidence ({label})"},
-    number={"suffix": "%"},
-    gauge={"axis": {"range": [0,100]}, "bar": {"color": color}}
-))
-python
-# Probability bar chart
 import plotly.express as px
-df = pd.DataFrame({"Sentiment": ["Negative","Positive"], "Probability": [neg*100, pos*100]})
-fig = px.bar(df, x="Sentiment", y="Probability", color="Sentiment",
-             color_discrete_map={"Positive":"#00CC66","Negative":"#FF4444"})
-fig.update_traces(texttemplate='%{y:.1f}%', textposition='outside')
-Quick Start
+import os
+
+os.makedirs("assets", exist_ok=True)
+
+# Example gauge
+def save_gauge(confidence=0.931, label="Positive", out="assets/gauge.png"):
+    color = "#00CC66" if label == "Positive" else "#FF4444"
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=confidence * 100,
+        title={"text": f"Confidence ({label})"},
+        number={"suffix": "%"},
+        gauge={"axis": {"range": [0, 100]}, "bar": {"color": color}}
+    ))
+    fig.update_layout(height=300)
+    fig.write_image(out, scale=2)  # PNG output
+
+# Example bar chart
+def save_bar(neg=0.069, pos=0.931, out="assets/probabilities.png"):
+    df = pd.DataFrame({
+        "Sentiment": ["Negative", "Positive"],
+        "Probability": [neg * 100, pos * 100]
+    })
+    fig = px.bar(df, x="Sentiment", y="Probability", color="Sentiment",
+                 color_discrete_map={"Positive": "#00CC66", "Negative": "#FF4444"},
+                 text="Probability")
+    fig.update_traces(texttemplate='%{y:.1f}%', textposition='outside')
+    fig.update_layout(yaxis_range=[0, 100], height=300)
+    fig.write_image(out, scale=2)
+
+if __name__ == "__main__":
+    save_gauge()
+    save_bar()
+Run the script and commit the generated images:
+
+bash
+python scripts/export_visuals.py
+git add assets/gauge.png assets/probabilities.png
+git commit -m "Add static visuals for README"
+git push
+Then reference them in the README:
+
+markdown
+![Confidence Gauge](assets/gauge.png)
+![Probability Distribution](assets/probabilities.png)
+Architecture and process workflow
+mermaid
+flowchart LR
+  A[User Input: single or batch] --> B[Gradio UI]
+  B --> C[Tokenizer (DistilBERT)]
+  C --> D[Model Inference (PyTorch)]
+  D --> E[Postprocess: softmax → probabilities]
+  E --> F[Visuals: Plotly gauge + bar chart]
+  E --> G[Results table / CSV]
+  G --> H[AWS S3 (optional): store results & artifacts]
+  F --> I[Hugging Face Spaces: hosted UI]
+Quick start (local)
 Clone
 
 bash
@@ -89,47 +106,47 @@ python -m venv venv
 source venv/bin/activate   # Linux / macOS
 venv\Scripts\activate      # Windows
 pip install -r requirements.txt
-Run locally
+Generate static visuals (optional but recommended for README)
+
+bash
+python scripts/export_visuals.py
+Run the app
 
 bash
 python app.py
 Or visit the hosted demo: https://huggingface.co/spaces/Arnie1980/sentiment-analysis-movies
 
-AWS Integration and Deployment Notes
-S3 stores datasets and model artifacts for reproducible runs. Use boto3 to upload/download CSVs and model folders.
+AWS integration (concise)
+S3: store datasets and model artifacts. Use boto3 to upload/download CSVs and model folders.
 
-IAM: create a least-privilege user with S3 access for automation scripts.
+IAM: create a least‑privilege user for automation scripts.
 
-Optional: use SageMaker or an EC2 instance for larger training runs; for quick demos, Colab or local CPU/GPU is sufficient.
+Training: use Colab or SageMaker for larger runs; for demo purposes, local or Colab is sufficient.
 
-Hosting: Hugging Face Spaces serves the Gradio app; S3 provides persistent storage for datasets and saved models.
+Deployment: Hugging Face Spaces hosts the Gradio app; S3 provides persistent storage.
 
-Tech Stack
-Layer	Technology
-Model	DistilBERT (Hugging Face Transformers)
-Inference	PyTorch
-UI	Gradio
-Visualizations	Plotly
-Storage	AWS S3
-Hosting	Hugging Face Spaces
-Project Structure
+Project structure
 Kód
 sentiment-analysis-movies/
 ├── app.py
 ├── requirements.txt
 ├── Procfile
+├── scripts/
+│   └── export_visuals.py
+├── assets/
+│   ├── gauge.png
+│   └── probabilities.png
 ├── src/
 │   ├── train_model.py
 │   └── inference.py
 ├── data/
-│   └── *.csv
 └── README.md
-How to extend
-Add explainability (LIME, SHAP) to highlight tokens that drive predictions.
+Notes & best practices
+Commit static visuals to assets/ so the README displays correctly on GitHub.
 
-Add multi-language support and additional datasets.
+For reproducible CI builds, add a step that runs scripts/export_visuals.py and uploads the generated images to the repo or artifacts.
 
-Add CI/CD to retrain and redeploy when new data is added to S3.
+Keep credentials out of the repo; use environment variables or CI secrets for AWS keys.
 
 Contact
-Project by Arnold Nemeth. Feedback, PRs, and collaboration welcome.
+Project by Arnold Nemeth. Feedback and PRs welcome.
